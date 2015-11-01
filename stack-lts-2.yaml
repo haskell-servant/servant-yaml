@@ -1,0 +1,7 @@
+resolver: lts-2.22
+packages:
+- '.'
+extra-deps:
+- servant-0.4.4.5
+- servant-server-0.4.4.5
+flags: {}
