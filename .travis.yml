@@ -24,7 +24,8 @@ install:
   package-db to build-cache"; cp -a .stack-work $HOME/.stack-work-cache; cp -a installplan.txt
   $HOME/.stack-work-cache/installplan.txt; fi;
 script:
-- stack --no-terminal --skip-ghc-check build --test
+- if [ "$PEDANTIC" = "YES" ]; then export STACKOPTS=--pedantic; fi
+- stack --no-terminal --skip-ghc-check build --test $STACKOPTS
 - stack --no-terminal --skip-ghc-check sdist
 matrix:
   fast_finish: true
@@ -67,7 +68,7 @@ matrix:
         - ghc-7.10.2
         - libgmp-dev
     compiler: ! ': # ghc-7.10.2 stack-lts-3.yaml'
-  - env: GHCVER=7.10.3 STACK_YAML=stack-lts-3.yaml
+  - env: GHCVER=7.10.3 STACK_YAML=stack-lts-4.yaml
     addons:
       apt:
         sources:
@@ -75,7 +76,7 @@ matrix:
         packages:
         - ghc-7.10.3
         - libgmp-dev
-    compiler: ! ': # ghc-7.10.3 stack-lts-3.yaml'
+    compiler: ! ': # ghc-7.10.3 stack-lts-4.yaml'
   - env: GHCVER=head CABALVER=1.22 STACK_SOLVER=YES
     addons:
       apt:
