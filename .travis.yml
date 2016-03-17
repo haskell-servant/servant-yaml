@@ -3,98 +3,126 @@
 sudo: false
 language: c
 before_install:
-- export PATH=/opt/ghc/$GHCVER/bin:$PATH
-- if [ -n "$CABALVER" ]; then export PATH=/opt/cabal/$CABALVER/bin:$PATH; fi
-- export PATH=~/.local/bin:$PATH
-- if [ ! -e ~/.local/bin/stack ]; then mkdir -p ~/.local/bin; travis_retry curl -L
-  https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1
-  -C ~/.local/bin '*/stack'; fi
+- unset CC
+- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo
   '?')]"
-- stack +RTS -N2 -RTS --version
+- cabal --version
 - ghc --version
+- if [ "$NOTESTS" = "YES" ]; then export CABALCONFOPTS="$CABALFLAGS"; export CABALTEST="true";
+  else export CABALCONFOPTS="$CABALFLAGS --enable-tests --enable-benchmarks"; export
+  CABALTEST="cabal test"; fi
+- if [ "$PEDANTIC" = "YES" ]; then export CABALBUILDOPTS="--ghc-options=-Werror --ghc-options=-Wall";
+  fi
 install:
-- if [ "$STACK_SOLVER" = "YES" ]; then rm -f stack.yaml; stack update; stack init
-  --solver; fi; stack --no-terminal --skip-ghc-check list-dependencies|sort > installplan.txt;
-  cat installplan.txt; stack --no-terminal --skip-ghc-check setup; if diff -u $HOME/.stack-work-cache/installplan.txt
-  installplan.txt; then echo "cabal build-cache HIT"; rm -rf .stack-work; cp -a $HOME/.stack-work-cache
-  .stack-work; rm -f .stack-work/installplan.txt; else echo "cabal build-cache MISS";
-  rm -rf $HOME/.stack-work-cache; stack --no-terminal --skip-ghc-check build --test
-  --only-dependencies; fi; if [ ! -d $HOME/.stack-work-cache ]; then echo "snapshotting
-  package-db to build-cache"; cp -a .stack-work $HOME/.stack-work-cache; cp -a installplan.txt
-  $HOME/.stack-work-cache/installplan.txt; fi;
+- if [ -f $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz ]; then zcat $HOME/.cabal/packages/hackage.haskell.org/00-index.tar.gz
+  > $HOME/.cabal/packages/hackage.haskell.org/00-index.tar; ls -l $HOME/.cabal/packages/hackage.haskell.org/;
+  fi; cabal update; sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config; if [ -n "$CABALCONFIG"
+  ]; then cp $CABALCONFIG cabal.config; fi; if [ -n "$STACKAGESNAPSHOT" ]; then curl
+  --silent https://www.stackage.org/$STACKAGESNAPSHOT/cabal.config | grep -v "$(cabal
+  info . -v0 | head -n 1 | awk '{ print $2 }' | sed -E 's/-[0-9]+(\.[0-9]+)+//') =="
+  > cabal.config; fi; cabal install --only-dependencies $CABALCONFOPTS --dry -v >
+  installplan.txt; sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt;
+  if diff -u $HOME/.cabsnap/installplan.txt installplan.txt; then echo "cabal build-cache
+  HIT"; rm -rfv .ghc; cp -av $HOME/.cabsnap/ghc $HOME/.ghc; cp -av $HOME/.cabsnap/lib
+  $HOME/.cabsnap/share $HOME/.cabsnap/bin $HOME/.cabal/; else echo "cabal build-cache
+  MISS"; rm -rf $HOME/.cabsnap; mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share
+  $HOME/.cabal/bin; cabal install --only-dependencies $CABALCONFOPTS; fi; if [ ! -d
+  $HOME/.cabsnap ]; then echo "snapshotting package-db to build-cache"; mkdir $HOME/.cabsnap;
+  cp -av $HOME/.ghc $HOME/.cabsnap/ghc; cp -av $HOME/.cabal/lib $HOME/.cabal/share
+  $HOME/.cabal/bin installplan.txt $HOME/.cabsnap/; fi;
 script:
-- if [ "$PEDANTIC" = "YES" ]; then export STACKOPTS=--pedantic; fi
-- stack --no-terminal --skip-ghc-check build --test $STACKOPTS
-- stack --no-terminal --skip-ghc-check sdist
+- if [ -f configure.ac ]; then autoreconf -i; fi
+- cabal configure $CABALCONFOPTS -v2
+- cabal build $CABALBUILDOPTS
+- $CABALTEST
+- if [ "$CABALVER" = "1.22" ]; then cabal check; fi
+- cabal sdist
+- SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && (cd dist && cabal install
+  --force-reinstalls $CABALFLAGS "$SRC_TGZ")
 matrix:
   fast_finish: true
   include:
-  - env: GHCVER=7.8.4 CABALVER=1.18 STACK_SOLVER=YES
+  - env: GHCVER=7.8.4 CABALVER=1.18
     addons:
       apt:
         sources:
         - hvr-ghc
         packages:
-        - ghc-7.8.4
         - cabal-install-1.18
-        - libgmp-dev
-    compiler: ! ': # ghc-7.8.4  YES'
-  - env: GHCVER=7.10.2 CABALVER=1.22 STACK_SOLVER=YES
-    addons:
-      apt:
-        sources:
-        - hvr-ghc
-        packages:
-        - ghc-7.10.2
-        - cabal-install-1.22
-        - libgmp-dev
-    compiler: ! ': # ghc-7.10.2  YES'
-  - env: GHCVER=7.8.4 STACK_YAML=stack-lts-2.yaml
-    addons:
-      apt:
-        sources:
-        - hvr-ghc
-        packages:
         - ghc-7.8.4
         - libgmp-dev
-    compiler: ! ': # ghc-7.8.4 stack-lts-2.yaml'
-  - env: GHCVER=7.10.2 STACK_YAML=stack-lts-3.yaml
+    compiler: ! ': # ghc-7.8.4 cabal-1.18'
+  - env: GHCVER=7.10.3 CABALVER=1.22
     addons:
       apt:
         sources:
         - hvr-ghc
         packages:
-        - ghc-7.10.2
-        - libgmp-dev
-    compiler: ! ': # ghc-7.10.2 stack-lts-3.yaml'
-  - env: GHCVER=7.10.3 STACK_YAML=stack-lts-4.yaml
-    addons:
-      apt:
-        sources:
-        - hvr-ghc
-        packages:
+        - cabal-install-1.22
         - ghc-7.10.3
         - libgmp-dev
-    compiler: ! ': # ghc-7.10.3 stack-lts-4.yaml'
-  - env: GHCVER=head CABALVER=1.22 STACK_SOLVER=YES
+    compiler: ! ': # ghc-7.10.3 cabal-1.22'
+  - env: GHCVER=8.0.1 CABALVER=1.24
     addons:
       apt:
         sources:
         - hvr-ghc
         packages:
-        - ghc-head
-        - cabal-install-1.22
+        - cabal-install-1.24
+        - ghc-8.0.1
         - libgmp-dev
-    compiler: ! ': # ghc-head  YES'
+    compiler: ! ': # ghc-8.0.1 cabal-1.24'
+  - env: GHCVER=7.10.3 CABALVER=1.22 STACKAGESNAPSHOT=lts-4
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-7.10.3
+        - libgmp-dev
+    compiler: ! ': # ghc-7.10.3 cabal-1.22 lts-4'
+  - env: GHCVER=7.10.3 CABALVER=1.22 STACKAGESNAPSHOT=lts-5
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-7.10.3
+        - libgmp-dev
+    compiler: ! ': # ghc-7.10.3 cabal-1.22 lts-5'
+  - env: GHCVER=7.10.3 CABALVER=1.22 CABALCONFIG=aeson-0.11-cabal.config
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-7.10.3
+        - libgmp-dev
+    compiler: ! ': # ghc-7.10.3 cabal-1.22  aeson-0.11-cabal.config'
+  - env: GHCVER=head CABALVER=1.22
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - cabal-install-1.22
+        - ghc-head
+        - libgmp-dev
+    compiler: ! ': # ghc-head cabal-1.22'
   allow_failures:
-  - env: GHCVER=head CABALVER=1.22 STACK_SOLVER=YES
+  - env: GHCVER=head CABALVER=1.22
+  - env: GHCVER=8.0.1 CABALVER=1.24
 branches:
   only:
   - master
+before_cache:
+- rm -fv $HOME/.cabal/packages/hackage.haskell.org/build-reports.log
+- rm -fv $HOME/.cabal/packages/hackage.haskell.org/00-index.tar
 cache:
   directories:
-  - ~/.stack
-  - ~/.local
-  - ~/.stack-work-cache
-  apt: true
+  - $HOME/.cabsnap
+  - $HOME/.cabal/packages
