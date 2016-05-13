@@ -1,22 +1,22 @@
 language: haskell-multi-ghc
 
 env:
-  - GHCVER=7.8.4 CABALVER=1.18
+  - GHCVER=8.0.1 CABALVER=1.24 CABALCONFIG=servant-0.7-cabal.config
+  - GHCVER=8.0.1 CABALVER=1.24
   - GHCVER=7.10.3 CABALVER=1.22 CABALCONFIG=servant-0.4-cabal.config
   - GHCVER=7.10.3 CABALVER=1.22 CABALCONFIG=servant-0.5-cabal.config
   - GHCVER=7.10.3 CABALVER=1.22 CABALCONFIG=servant-0.6-cabal.config
   - GHCVER=7.10.3 CABALVER=1.22 CABALCONFIG=servant-0.7-cabal.config
-  - GHCVER=8.0.1 CABALVER=1.24
+  - GHCVER=7.8.4 CABALVER=1.18
   - GHCVER=7.10.3 CABALVER=1.22 STACKAGESNAPSHOT=lts-4
   - GHCVER=7.10.3 CABALVER=1.22 STACKAGESNAPSHOT=lts-5
   - GHCVER=7.10.3 CABALVER=1.22 CABALCONFIG=aeson-0.11-cabal.config
-  - GHCVER=head CABALVER=1.22
+  - GHCVER=head CABALVER=1.24
 
 matrix:
   fast_finish: true
   allow_failures:
-    - env: GHCVER=head CABALVER=1.22
-    - env: GHCVER=8.0.1 CABALVER=1.24
+    - env: GHCVER=head CABALVER=1.24
 
 branches:
   only:
