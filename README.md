@@ -47,4 +47,14 @@ Content-Type: application/x-yaml
 
 foo: 1337
 bar: JSON?
+
+$ curl -H 'Accept: text/yaml' -D - http://localhost:8000/
+HTTP/1.1 200 OK
+Transfer-Encoding: chunked
+Date: Tue, 11 Oct 2016 05:53:29 GMT
+Server: Warp/3.2.8
+Content-Type: text/yaml
+
+foo: 42
+bar: Yaml!
 ```

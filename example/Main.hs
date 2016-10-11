@@ -43,5 +43,8 @@ main = do
     case args of
         ("run":_) -> do
             port <- fromMaybe 8000 . (>>= readMaybe) <$> lookupEnv "PORT"
+            putStrLn $ "http://localhost:" ++ show port ++ "/"
             Warp.run port app
-        _ -> putStrLn "To run, pass run argument"
+        _ -> do
+            putStrLn "Example application, used as a compilation check"
+            putStrLn "To run, pass run argument: --test-arguments run"

@@ -1,1 +1,13 @@
-stack-lts-2.yaml
+resolver: nightly-2016-10-10
+packages:
+- '.'
+- location:
+    git: git@github.com:phadej/servant.git
+    commit: f896b6a248d7f28e5258f9c0aa4425cb903df6c5
+  subdirs:
+    - servant
+    - servant-server
+  extra-dep: true
+extra-deps: []
+flags: {}
+extra-package-dbs: []
