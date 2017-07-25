@@ -3,7 +3,7 @@ version:        0.1.0.0
 x-revision:     15
 synopsis:       Servant support for yaml
 description:    Servant support for yaml
-category:       Web
+category:       Web, Servant
 homepage:       https://github.com/phadej/servant-yaml#readme
 bug-reports:    https://github.com/phadej/servant-yaml/issues
 author:         Oleg Grenrus <oleg.grenrus@iki.fi>
