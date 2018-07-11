@@ -4,8 +4,8 @@ x-revision:     21
 synopsis:       Servant support for yaml
 description:    Servant support for yaml.
 category:       Web, Servant
-homepage:       https://github.com/phadej/servant-yaml#readme
-bug-reports:    https://github.com/phadej/servant-yaml/issues
+homepage:       https://github.com/haskell-servant/servant-yaml#readme
+bug-reports:    https://github.com/haskell-servant/servant-yaml/issues
 author:         Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:     Oleg Grenrus <oleg.grenrus@iki.fi>
 license:        BSD3
@@ -19,7 +19,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/phadej/servant-yaml
+  location: https://github.com/haskell-servant/servant-yaml
 
 library
   hs-source-dirs:
