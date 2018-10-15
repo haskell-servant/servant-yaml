@@ -1,6 +1,6 @@
 name:           servant-yaml
 version:        0.1.0.0
-x-revision:     21
+x-revision:     22
 synopsis:       Servant support for yaml
 description:    Servant support for yaml.
 category:       Web, Servant
