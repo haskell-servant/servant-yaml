@@ -1,7 +1,7 @@
-{-# LANGUAGE AutoDeriveTypeable #-}
+{-# LANGUAGE AutoDeriveTypeable    #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings     #-}
 -- |
 -- Module      :  Servant.Yaml
 -- License     :  BSD-3-Clause
@@ -16,13 +16,16 @@
 -- Will then check that @a@ has a `ToJSON` instance (`Value` has).
 module Servant.Yaml where
 
-import Data.Yaml     (FromJSON, ToJSON, decodeEither, encode)
-import Servant.API   (Accept (..), MimeRender (..), MimeUnrender (..))
+import           Data.Yaml
+                 (FromJSON, ToJSON, decodeEither', encode,
+                 prettyPrintParseException)
+import           Servant.API
+                 (Accept (..), MimeRender (..), MimeUnrender (..))
 
 import qualified Data.ByteString.Lazy as LBS
-import qualified Network.HTTP.Media as M
+import qualified Network.HTTP.Media   as M
 
-data YAML -- deriving Typeable
+data YAML
 
 -- | @application/x-yaml@
 instance Accept YAML where
@@ -34,4 +37,4 @@ instance ToJSON a => MimeRender YAML a where
 
 -- | `decodeEither`
 instance FromJSON a => MimeUnrender YAML a where
-    mimeUnrender _ = decodeEither . LBS.toStrict
+    mimeUnrender _ = either (Left . prettyPrintParseException) Right . decodeEither' . LBS.toStrict
