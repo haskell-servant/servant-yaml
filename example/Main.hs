@@ -3,17 +3,22 @@
 {-# LANGUAGE TypeOperators   #-}
 module Main (main) where
 
-import Prelude        ()
-import Prelude.Compat
+import           Prelude ()
+import           Prelude.Compat
 
-import Data.Aeson.TH
-import Data.Char          (toLower)
-import Data.Maybe         (fromMaybe)
-import Network.Wai        (Application)
-import Servant
-import Servant.Yaml
-import System.Environment (getArgs, lookupEnv)
-import Text.Read          (readMaybe)
+import           Data.Aeson.TH
+import           Data.Char
+                 (toLower)
+import           Data.Maybe
+                 (fromMaybe)
+import           Network.Wai
+                 (Application)
+import           Servant
+import           Servant.Yaml
+import           System.Environment
+                 (getArgs, lookupEnv)
+import           Text.Read
+                 (readMaybe)
 
 import qualified Network.Wai.Handler.Warp as Warp
 
